@@ -33,29 +33,28 @@ class StreetAudioEngine {
             { text: "燙", tts: "燙", pitch: 0, rate: 1, audio: './audio/audio09.mp3' }
         ];
         // 劇情裡阿睿看到鐵盤煙灰缸、眼睛亮起來的驚呼（找不到音檔時改用合成的「哇嗚」+ 亮晶晶音效）
-        this.wowLine = { text: 'WOW！', audio: './audio/audio10.mp3' };
+        this.wowLine = { text: 'WOW！', audio: './audio/audio0.mp3' };
 
-        // 在黃金過癮區連續五連擊的爽叫（規則同燙嘴台詞：有音檔就只挑有音檔的；全部沒有才用合成嘆息 + 瀏覽器語音念 tts）
+        // 在黃金過癮區連續五連擊的台詞（僅供畫面顯示文字，已關閉音效）
         this.pleasureLines = [
-            { text: "喔～", tts: "喔", pitch: 0, rate: 0.8, audio: './audio/audio11.mp3' },
-            { text: "送～", tts: "送", pitch: 0, rate: 0.8, audio: './audio/audio12.mp3' },
-            { text: "舒服～", tts: "舒服", pitch: 0, rate: 0.8, audio: './audio/audio13.mp3' },
-            { text: "奇摩子～", tts: "奇摩子", pitch: 0, rate: 0.85, audio: './audio/audio14.mp3' },
-            { text: "Oh ya～", tts: "喔耶", pitch: 0, rate: 0.85, audio: './audio/audio15.mp3' }
+            { text: "喔～" },
+            { text: "送～" },
+            { text: "舒服～" },
+            { text: "奇摩子～" },
+            { text: "Oh ya～" }
         ];
 
         // 洗牌袋：每一組台詞各自記「還沒抽到的」和「上一句」（見 drawLine）
         this.lineBags = {};
     }
 
-    // 所有真人配音檔的路徑（開場預先下載用）
+    // 所有真人配音檔的路徑（開場預先下載用，已排除過癮區音檔）
     voiceClipSrcs() {
-        return [...this.taiwaneseBurnLines, this.wowLine, ...this.pleasureLines].filter(l => l.audio).map(l => l.audio);
+        return [...this.taiwaneseBurnLines, this.wowLine].filter(l => l.audio).map(l => l.audio);
     }
 
     // 台詞用「洗牌袋」抽：整副洗亂後依序抽，抽完才重洗，每一輪每句剛好出現一次，
     // 重洗時也避開上一句，不會連續兩次同一句。
-    //（每次各自亂數雖然長期平均，但短時間內常常同一句連出好幾次，玩起來會像只有固定那幾句）
     drawLine(group, pool) {
         const state = this.lineBags[group] || (this.lineBags[group] = { bag: [], last: null });
         while (state.bag.length) {
@@ -397,7 +396,7 @@ class StreetAudioEngine {
         } catch (e) { }
     }
 
-    // 劇情：阿睿看到鐵盤煙灰缸眼睛一亮的「WOW」。有 audio10.mp3 就播，沒有就用合成音效
+    // 劇情：阿睿看到鐵盤煙灰缸眼睛一亮的「WOW」。有 audio0.mp3 就播，沒有就用合成音效
     playWowVoice() {
         this.init();
         if (VoiceClips.play(this.wowLine.audio)) return;
@@ -456,63 +455,10 @@ class StreetAudioEngine {
         } catch (e) { }
     }
 
-    // 黃金過癮區五連擊的爽叫：回傳畫面上要顯示的台詞
+    // 黃金過癮區五連擊：只回傳畫面上要顯示的台詞，不發出任何聲音
     playPleasureVoice() {
-        this.init();
-        const recorded = this.pleasureLines.filter(l => VoiceClips.has(l.audio));
-        const line = this.drawLine('pleasure', recorded.length ? recorded : this.pleasureLines);
-        if (!VoiceClips.play(line.audio)) {
-            this.playSynthSigh();
-            this.speakLine(line);
-        }
+        const line = this.drawLine('pleasure', this.pleasureLines);
         return line.text;
-    }
-
-    // 找不到爽叫音檔時的備援：一聲滿足的「啊～」（往下滑的人聲 + 吐氣聲）
-    playSynthSigh() {
-        if (!this.ctx) return;
-        try {
-            const ctx = this.ctx;
-            const now = ctx.currentTime;
-            const dur = 0.7;
-
-            const osc = ctx.createOscillator();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(250, now);
-            osc.frequency.exponentialRampToValueAtTime(150, now + dur);
-            const formant = ctx.createBiquadFilter();
-            formant.type = 'bandpass';
-            formant.frequency.setValueAtTime(820, now);
-            formant.frequency.linearRampToValueAtTime(600, now + dur);
-            formant.Q.value = 3;
-            const vGain = ctx.createGain();
-            vGain.gain.setValueAtTime(0.001, now);
-            vGain.gain.linearRampToValueAtTime(0.2, now + 0.1);
-            vGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-            osc.connect(formant);
-            formant.connect(vGain);
-            vGain.connect(ctx.destination);
-            osc.start(now);
-            osc.stop(now + dur + 0.02);
-
-            const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
-            const ch = buf.getChannelData(0);
-            for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
-            const breath = ctx.createBufferSource();
-            breath.buffer = buf;
-            const bFilter = ctx.createBiquadFilter();
-            bFilter.type = 'bandpass';
-            bFilter.frequency.value = 1600;
-            bFilter.Q.value = 0.8;
-            const bGain = ctx.createGain();
-            bGain.gain.setValueAtTime(0.001, now);
-            bGain.gain.linearRampToValueAtTime(0.09, now + 0.15);
-            bGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-            breath.connect(bFilter);
-            bFilter.connect(bGain);
-            bGain.connect(ctx.destination);
-            breath.start(now);
-        } catch (e) { }
     }
 
     playCoughWarning() {
@@ -581,7 +527,7 @@ const CoverVideo = {
 };
 
 /**
- * 真人配音（audio/ 資料夾裡的 audioXX.mp3：燙嘴台詞 01~09、劇情 WOW 10、過癮區爽叫 11~15，見 StreetAudioEngine 的台詞表）：放了就播，沒放就退回瀏覽器語音。
+ * 真人配音（audio/ 資料夾裡的 audioXX.mp3：燙嘴台詞 01~09、劇情 WOW 0，見 StreetAudioEngine 的台詞表）：放了就播，沒放就退回瀏覽器語音。
  * 上線時下載後交給 Web Audio 播（燙嘴發生在遊戲中途，不是點擊當下，手機上 <audio> 會被擋）；
  * 雙擊開檔（file://）讀不到檔案內容，改用 <audio> 播。
  */
