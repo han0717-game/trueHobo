@@ -36,7 +36,7 @@ function checkForNewVersion() {
 }
 
 /**
- * PWA：註冊 service worker（sw.js）。它不快取遊戲（一定要連網才能玩），只在開啟時沒網路顯示「無法連線」頁。
+ * 註冊 service worker（sw.js）。它不快取遊戲（一定要連網才能玩），只在開啟時沒網路顯示「無法連線」頁。
  * 網址帶 ?v=版本號：APP_VERSION 一改，瀏覽器就會換新版 sw.js。
  */
 function registerServiceWorker() {

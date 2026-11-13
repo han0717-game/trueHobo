@@ -11,11 +11,11 @@
          改了 og-image.jpg 之後，FB 要到「分享偵錯工具」重新擷取才會更新預覽圖 -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="街友本色 I - 煙屁股大作戰">
-    <meta property="og:url" content="https://han45678.github.io/HanWorks/trueHobo/1/">
+    <meta property="og:url" content="https://han0717-game.github.io/trueHobo/1/">
     <meta property="og:title" content="街友本色 I - 煙屁股大作戰 | True Hobo I: Butt Brawl">
     <meta property="og:description" content="在台灣霓虹暗巷裡挑一根菸屁股，壓住猛吸、適時放開控溫，60 秒內抽出最高分！你能抽贏我嗎？">
-    <meta property="og:image" content="https://han45678.github.io/HanWorks/trueHobo/1/images/og-image.jpg">
-    <!-- og-image.jpg：直式 1080x1350（4:5），下方有遊戲網址的 QR code；結算畫面下載的戰績圖也用這張當底圖（js/share.js） -->
+    <meta property="og:image" content="https://han0717-game.github.io/trueHobo/1/images/og-image.jpg">
+    <!-- og-image.jpg：直式 1080x1350（4:5），下方有大廳網址的 QR code（https://han0717-game.github.io/?true-hobo-1）；結算畫面下載的戰績圖也用這張當底圖（js/share.js） -->
     <meta property="og:image:width" content="1080">
     <meta property="og:image:height" content="1350">
     <meta property="og:locale" content="zh_TW">
@@ -25,7 +25,7 @@
     <!-- 分頁小圖示：撿來的菸屁股（濾嘴 + 一小截皺菸紙 + 燒焦的頭）；內嵌，免得瀏覽器去抓不存在的 favicon.ico -->
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><g transform='rotate(-32 50 50)' stroke='%23000' stroke-width='5' stroke-linejoin='round'><rect x='8' y='36' width='46' height='28' rx='3' fill='%23d9893a'/><path d='M54 37 H78 L84 43 L79 50 L85 57 L78 63 H54 Z' fill='%23ece6d8'/><path d='M76 37 L84 43 L79 50 L85 57 L78 63 H71 L73 50 Z' fill='%23332b26' stroke='none'/></g><g transform='rotate(-32 50 50)' fill='%23f6c27a'><circle cx='20' cy='45' r='3'/><circle cx='32' cy='55' r='3'/><circle cx='44' cy='45' r='3'/></g></svg>">
-    <!-- 不提供「安裝成 App」（已移除 manifest、主畫面圖示與安裝詢問視窗）；一定要連網才能玩，開啟時沒網路顯示無法連線（見 sw.js） -->
+    <!-- 一定要連網才能玩，開啟時沒網路顯示無法連線（見 sw.js） -->
     <meta name="theme-color" content="#080a0f">
     <!-- Phaser 3 -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
@@ -37,9 +37,9 @@
          每次更新遊戲（JS、CSS、圖片、音檔、影片有任何變動）就把 APP_VERSION 改成新的號碼。
          所有檔案的網址都會帶上 ?v=版本號，號碼一變就是新網址，玩家的瀏覽器和 GitHub Pages 的 CDN 都會重新下載；
          玩家拿到舊的 index.html 時，js/main.js 的 checkForNewVersion() 會發現並自動換成新版。
-         sw.js 也跟著這個號碼：號碼一變，裝好 App 的玩家下次開啟就會換新版的 sw.js。 -->
+         sw.js 也跟著這個號碼：號碼一變，瀏覽器就會換新版的 sw.js。 -->
     <script>
-        window.APP_VERSION = '1.0.20';
+        window.APP_VERSION = '1.0.21';
 
         // 網址加上 ?v=版本號（雙擊開檔 file:// 時不加：本機檔案不會被快取，加了反而可能讀不到）
         window.withVersion = function (url) {

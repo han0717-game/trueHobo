@@ -7,7 +7,7 @@
 // 有沒有看完過劇情：記在玩家自己的瀏覽器（localStorage）；
 // 無痕模式等讀寫失敗時，至少在這次開啟期間記得（重新整理後要再看一次）
 const StoryProgress = {
-    KEY: 'trueHobo1.storySeen',   // han45678.github.io 底下所有頁面共用 localStorage，名稱要帶遊戲代號
+    KEY: 'trueHobo1.storySeen',   // han0717-game.github.io 底下所有頁面共用 localStorage，名稱要帶遊戲代號
     seenThisSession: false,
 
     isSeen() {

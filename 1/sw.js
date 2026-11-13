@@ -1,14 +1,10 @@
 /**
- * PWA 的 service worker：這個遊戲一定要連網才能玩，所以「不快取任何遊戲檔案」，
- * 只負責開啟時連不上網路，顯示「無法連線」頁（取代瀏覽器 / 主畫面 App 自己的錯誤畫面）。
+ * service worker：這個遊戲一定要連網才能玩，所以「不快取任何遊戲檔案」，
+ * 只負責開啟時連不上網路，顯示「無法連線」頁（取代瀏覽器自己的錯誤畫面）。
  * 玩到一半才斷線，由 js/main.js 的 setupOfflineGuard() 蓋上同樣的無法連線畫面。
  *
  * 由 js/main.js 的 registerServiceWorker() 用 ./sw.js?v=版本號 註冊，APP_VERSION 一改就會換新版。
  */
-
-// 舊版 sw.js 曾把遊戲存進快取供離線遊玩，啟用時清掉。
-// 同網域（han45678.github.io）的其他遊戲共用快取空間，只清這個資料夾的（名稱開頭是資料夾路徑）
-const CACHE_PREFIX = `${new URL('./', self.location.href).pathname}:`;
 
 // 無法連線頁（樣式跟 css/style.css 的 .offline 一樣；連上網路會自動重新載入）
 const OFFLINE_HTML = `<!DOCTYPE html>
@@ -57,13 +53,7 @@ html, body { margin: 0; height: 100%; background: #080a0f; }
 
 self.addEventListener('install', () => self.skipWaiting());
 
-self.addEventListener('activate', event => {
-    event.waitUntil((async () => {
-        const keys = await caches.keys();
-        await Promise.all(keys.filter(key => key.startsWith(CACHE_PREFIX)).map(key => caches.delete(key)));
-        await self.clients.claim();
-    })());
-});
+self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
 
 // 只經手「開啟頁面」：一律走網路，連不上就回無法連線頁；其他請求（遊戲檔案、廣告等）都不經手，照常走網路
 self.addEventListener('fetch', event => {
