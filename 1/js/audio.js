@@ -35,13 +35,13 @@ class StreetAudioEngine {
         // 劇情裡阿睿看到鐵盤煙灰缸、眼睛亮起來的驚呼（找不到音檔時改用合成的「哇嗚」+ 亮晶晶音效）
         this.wowLine = { text: 'WOW！', audio: './audio/audio10.mp3' };
 
-        // 在黃金過癮區連續五連擊的爽叫（規則同燙嘴台詞：有音檔就只挑有音檔的；全部沒有才用合成嘆息 + 瀏覽器語音念 tts）
+        // 在黃金過癮區連續五連擊的爽叫：只顯示字幕（搭配爽臉圖），不出聲
         this.pleasureLines = [
-            { text: "喔～", tts: "喔", pitch: 0, rate: 0.8, audio: './audio/audio11.mp3' },
-            { text: "送～", tts: "送", pitch: 0, rate: 0.8, audio: './audio/audio12.mp3' },
-            { text: "舒服～", tts: "舒服", pitch: 0, rate: 0.8, audio: './audio/audio13.mp3' },
-            { text: "奇摩子～", tts: "奇摩子", pitch: 0, rate: 0.85, audio: './audio/audio14.mp3' },
-            { text: "Oh ya～", tts: "喔耶", pitch: 0, rate: 0.85, audio: './audio/audio15.mp3' }
+            { text: "喔～" },
+            { text: "送～" },
+            { text: "舒服～" },
+            { text: "奇摩子～" },
+            { text: "Oh ya～" }
         ];
 
         // 洗牌袋：每一組台詞各自記「還沒抽到的」和「上一句」（見 drawLine）
@@ -456,63 +456,9 @@ class StreetAudioEngine {
         } catch (e) { }
     }
 
-    // 黃金過癮區五連擊的爽叫：回傳畫面上要顯示的台詞
-    playPleasureVoice() {
-        this.init();
-        const recorded = this.pleasureLines.filter(l => VoiceClips.has(l.audio));
-        const line = this.drawLine('pleasure', recorded.length ? recorded : this.pleasureLines);
-        if (!VoiceClips.play(line.audio)) {
-            this.playSynthSigh();
-            this.speakLine(line);
-        }
-        return line.text;
-    }
-
-    // 找不到爽叫音檔時的備援：一聲滿足的「啊～」（往下滑的人聲 + 吐氣聲）
-    playSynthSigh() {
-        if (!this.ctx) return;
-        try {
-            const ctx = this.ctx;
-            const now = ctx.currentTime;
-            const dur = 0.7;
-
-            const osc = ctx.createOscillator();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(250, now);
-            osc.frequency.exponentialRampToValueAtTime(150, now + dur);
-            const formant = ctx.createBiquadFilter();
-            formant.type = 'bandpass';
-            formant.frequency.setValueAtTime(820, now);
-            formant.frequency.linearRampToValueAtTime(600, now + dur);
-            formant.Q.value = 3;
-            const vGain = ctx.createGain();
-            vGain.gain.setValueAtTime(0.001, now);
-            vGain.gain.linearRampToValueAtTime(0.2, now + 0.1);
-            vGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-            osc.connect(formant);
-            formant.connect(vGain);
-            vGain.connect(ctx.destination);
-            osc.start(now);
-            osc.stop(now + dur + 0.02);
-
-            const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
-            const ch = buf.getChannelData(0);
-            for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
-            const breath = ctx.createBufferSource();
-            breath.buffer = buf;
-            const bFilter = ctx.createBiquadFilter();
-            bFilter.type = 'bandpass';
-            bFilter.frequency.value = 1600;
-            bFilter.Q.value = 0.8;
-            const bGain = ctx.createGain();
-            bGain.gain.setValueAtTime(0.001, now);
-            bGain.gain.linearRampToValueAtTime(0.09, now + 0.15);
-            bGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-            breath.connect(bFilter);
-            bFilter.connect(bGain);
-            bGain.connect(ctx.destination);
-            breath.start(now);
-        } catch (e) { }
+    // 黃金過癮區五連擊的爽叫：只抽一句畫面上要顯示的台詞（不播任何聲音）
+    pickPleasureLine() {
+        return this.drawLine('pleasure', this.pleasureLines).text;
     }
 
     playCoughWarning() {

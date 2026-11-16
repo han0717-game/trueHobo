@@ -61,7 +61,11 @@ class BootScene extends Phaser.Scene {
             fontSize: '13px',
             color: '#a8a29e'
         }).setOrigin(0.5).setDepth(12);
-
+        this.add.text(W / 2, 592, `v${APP_VERSION}`, {
+            fontFamily: FONT_UI,
+            fontSize: '12px',
+            color: '#78716c'
+        }).setOrigin(0.5).setDepth(12);
 
         // pointerup 對手機才算「使用者操作」，要在這個當下建立音效、播放影片
         this.input.once('pointerup', () => {

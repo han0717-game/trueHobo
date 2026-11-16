@@ -473,9 +473,9 @@ class PlayScene extends Phaser.Scene {
         });
     }
 
-    // 過癮區每滿五連擊：切到爽臉 + 爽叫一聲 + 浮字
+    // 過癮區每滿五連擊：切到爽臉 + 爽叫浮字（不出聲）
     triggerSweetStreak() {
-        const line = audioEngine.playPleasureVoice();
+        const line = audioEngine.pickPleasureLine();
         if (this.imgJoy) {
             const s = this.imgJoy.baseScale;
             this.tweens.killTweensOf(this.imgJoy);
