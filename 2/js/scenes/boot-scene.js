@@ -1,0 +1,81 @@
+// ----------------------------------------------------------------------------
+// SCENE A: BOOT & PRELOAD SCENE
+// 原圖：images/0.webp ~ 10.webp（各張用途見 js/comic-art.js 開頭）；載不到的改用程式繪製的備援美術
+// ----------------------------------------------------------------------------
+const ART_IMAGE_COUNT = 11;
+
+class BootScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'BootScene' });
+    }
+
+    preload() {
+        setupView(this);
+        this.loadingTxt = this.add.text(GAME_W / 2, GAME_H / 2, '正在載入深夜公園與音效...', {
+            fontFamily: FONT_UI,
+            fontSize: '20px',
+            color: '#f59e0b',
+            fontStyle: 'bold'
+        }).setOrigin(0.5);
+
+        CoverVideo.load();
+        VoiceClips.load(audioEngine.voiceClipSrcs());
+        for (let i = 0; i < ART_IMAGE_COUNT; i++) this.load.image(`img${i}`, withVersion(`./images/${i}.webp`));
+        // 原型階段大部分圖都還沒有：載不到是正常的，直接用備援美術
+        this.load.on('loaderror', () => { });
+        this.load.on('progress', p => this.loadingTxt.setText(`正在載入深夜公園與音效... ${Math.round(p * 100)}%`));
+    }
+
+    create() {
+        // 結算畫面戰績圖的底圖（og-image.jpg）先在背景下載，不擋開場
+        ShareKit.loadBase().catch(() => { });
+        loadWebFonts().then(() => {
+            ComicArtGenerator.generateAllTextures(this);
+            FxTextures.generate(this);
+            this.showTapToStart();
+        });
+    }
+
+    // 瀏覽器規定玩家點過畫面之前不能播放有聲音的影片和音樂，所以一律先點一下，封面一出來就有聲音
+    showTapToStart() {
+        const W = GAME_W;
+        this.loadingTxt.destroy();
+        addArtImage(this, 'img0').setAlpha(0.3);
+        addFilmFinish(this);
+
+        this.add.text(W / 2, 372, '街友本色 II', {
+            fontFamily: FONT_TITLE,
+            fontSize: '46px',
+            fontStyle: '900',
+            color: '#f59e0b',
+            stroke: '#000000',
+            strokeThickness: 8
+        }).setOrigin(0.5).setDepth(12);
+        this.add.text(W / 2, 422, '公園C位爭奪戰 · True Hobo II: Bench Brawl', {
+            fontFamily: FONT_UI,
+            fontSize: '15px',
+            fontStyle: 'bold',
+            color: '#fde68a'
+        }).setOrigin(0.5).setShadow(2, 2, '#000', 3).setDepth(12);
+
+        const btn = createComicButton(this, W / 2, 510, 250, 62, '點一下開始', { fontSize: '25px', depth: 13 });
+        this.tweens.add({ targets: btn, scale: 1.05, duration: 650, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        this.add.text(W / 2, 572, 'HAN網頁工作室製作', {
+            fontFamily: FONT_UI,
+            fontSize: '13px',
+            color: '#a8a29e'
+        }).setOrigin(0.5).setDepth(12);
+        this.add.text(W / 2, 592, `v${APP_VERSION}`, {
+            fontFamily: FONT_UI,
+            fontSize: '12px',
+            color: '#78716c'
+        }).setOrigin(0.5).setDepth(12);
+
+        // pointerup 對手機才算「使用者操作」，要在這個當下建立音效、播放影片
+        this.input.once('pointerup', () => {
+            audioEngine.init();
+            CoverVideo.start();
+            this.scene.start('CoverScene');
+        });
+    }
+}
